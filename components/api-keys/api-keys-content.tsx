@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Key, Copy, Trash2, Eye, EyeOff, Database } from "lucide-react"
 import { useEffect, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 
@@ -46,7 +45,6 @@ export function ApiKeysContent() {
   const [newlyCreatedKeys, setNewlyCreatedKeys] = useState<Map<string, string>>(new Map())
   const [deleteConfirmations, setDeleteConfirmations] = useState<Set<string>>(new Set())
   const { toast } = useToast()
-  const supabase = createClient()
 
   useEffect(() => {
     const fetchApiKeys = async () => {
@@ -99,6 +97,7 @@ export function ApiKeysContent() {
       console.log("[v0] Generated API key and hash")
 
       // Call server endpoint to create API key (bypasses RLS)
+      console.log("[v0] Calling /api/keys/create endpoint...")
       const response = await fetch("/api/keys/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -109,8 +108,11 @@ export function ApiKeysContent() {
         }),
       })
 
+      console.log("[v0] Response status:", response.status)
+      
       if (!response.ok) {
         const errorData = await response.json()
+        console.error("[v0] API endpoint error:", errorData)
         throw new Error(errorData.error || "Failed to create API key")
       }
 
