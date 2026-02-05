@@ -53,16 +53,18 @@ export function ApiKeysContent() {
       if (!user) return
 
       try {
-        const { data, error } = await supabase
-          .from("api_keys")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
+        console.log("[v0] Fetching API keys for user:", user.id)
+        const response = await fetch(`/api/keys?userId=${user.id}`)
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch API keys")
+        }
 
-        if (error) throw error
-        setApiKeys(data || [])
+        const data = await response.json()
+        console.log("[v0] API keys fetched:", data.keys.length)
+        setApiKeys(data.keys || [])
       } catch (error) {
-        console.error("Failed to fetch API keys:", error)
+        console.error("[v0] Failed to fetch API keys:", error)
         toast({
           title: "Error",
           description: "Failed to load API keys",
@@ -74,12 +76,12 @@ export function ApiKeysContent() {
     }
 
     fetchApiKeys()
-  }, [user, supabase, toast])
+  }, [user, toast])
 
   const createApiKey = async () => {
     if (!user || !newKeyName.trim()) {
       toast({
-        title: "❌ Missing Information",
+        title: "Missing Information",
         description: "Please enter a name for your API key",
         variant: "destructive",
       })
@@ -96,43 +98,44 @@ export function ApiKeysContent() {
 
       console.log("[v0] Generated API key and hash")
 
-      const { data, error } = await supabase
-        .from("api_keys")
-        .insert({
-          user_id: user.id,
-          name: newKeyName.trim(),
-          key_hash: hashedKey,
-        })
-        .select()
-        .single()
+      // Call server endpoint to create API key (bypasses RLS)
+      const response = await fetch("/api/keys/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          keyName: newKeyName.trim(),
+          keyHash: hashedKey,
+        }),
+      })
 
-      if (error) {
-        console.log("[v0] Supabase error:", error)
-        throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to create API key")
       }
 
-      console.log("[v0] API key created successfully:", data.id)
+      const data = await response.json()
+      console.log("[v0] API key created successfully:", data.keyId)
 
-      setNewlyCreatedKeys((prev) => new Map(prev).set(data.id, apiKey))
+      setNewlyCreatedKeys((prev) => new Map(prev).set(data.keyId, apiKey))
 
       // Refresh the list
-      const { data: updatedKeys } = await supabase
-        .from("api_keys")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
+      const listResponse = await fetch(`/api/keys?userId=${user.id}`)
+      if (listResponse.ok) {
+        const listData = await listResponse.json()
+        setApiKeys(listData.keys || [])
+      }
 
-      setApiKeys(updatedKeys || [])
       setNewKeyName("")
 
       toast({
-        title: "✅ API Key Created!",
+        title: "API Key Created!",
         description: "Your new API key is ready. Copy it now - it won't be shown again!",
       })
     } catch (error) {
       console.error("[v0] Failed to create API key:", error)
       toast({
-        title: "❌ Creation Failed",
+        title: "Creation Failed",
         description: `Failed to create API key: ${error instanceof Error ? error.message : "Unknown error"}`,
         variant: "destructive",
       })
@@ -155,9 +158,19 @@ export function ApiKeysContent() {
 
   const confirmDelete = async (keyId: string) => {
     try {
-      const { error } = await supabase.from("api_keys").delete().eq("id", keyId)
+      const response = await fetch("/api/keys", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          keyId,
+          userId: user?.id,
+        }),
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to delete API key")
+      }
 
       setApiKeys((keys) => keys.filter((key) => key.id !== keyId))
       setDeleteConfirmations((prev) => {
@@ -172,13 +185,13 @@ export function ApiKeysContent() {
       })
 
       toast({
-        title: "🗑️ Key Deleted",
+        title: "Key Deleted",
         description: "API key has been permanently deleted",
       })
     } catch (error) {
-      console.error("Failed to delete API key:", error)
+      console.error("[v0] Failed to delete API key:", error)
       toast({
-        title: "❌ Delete Failed",
+        title: "Delete Failed",
         description: "Failed to delete API key",
         variant: "destructive",
       })
