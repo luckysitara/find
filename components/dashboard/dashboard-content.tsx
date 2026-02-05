@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Key, CreditCard, Activity, TrendingUp, Database, Shield, Calendar, BarChart3, Home } from "lucide-react"
-import { useEffect, useState } from "react"
+import { Key, CreditCard, Activity, TrendingUp, Database, Shield, Calendar, BarChart3, Home, RefreshCw } from "lucide-react"
+import { useEffect, useState, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
@@ -26,7 +26,8 @@ export function DashboardContent() {
   const [loadingStats, setLoadingStats] = useState(false)
   const [walletConnectedDate, setWalletConnectedDate] = useState<string | null>(null)
   const [accountCreatedDate, setAccountCreatedDate] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false) // Declare the loading variable
+  const [loading, setLoading] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const supabase = createClient()
 
   // Parse dates from user object
@@ -55,6 +56,32 @@ export function DashboardContent() {
       }
     }
   }, [user])
+
+  // Refresh stats function
+  const handleRefresh = useCallback(async () => {
+    if (!user) return
+    setIsRefreshing(true)
+    try {
+      // Add cache busting parameter
+      const cacheParam = `t=${Date.now()}`
+      const response = await fetch(`/api/subscription/status?wallet=${user.wallet_address}&${cacheParam}`)
+      if (response.ok) {
+        const data = await response.json()
+        setStats({
+          dailyUsage: data?.usage?.dailyUsage ?? 0,
+          dailyLimit: data?.subscription?.dailyRequests ?? 10,
+          totalApiKeys: stats?.totalApiKeys ?? 0,
+          currentPlan: data?.subscription?.planName ?? "free",
+          planExpiry: data?.subscription?.expiresAt ?? null,
+        })
+        console.log("[v0] Stats refreshed successfully")
+      }
+    } catch (error) {
+      console.error("[v0] Refresh error:", error)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [user, stats])
 
   // Fetch stats when user is available
   useEffect(() => {
@@ -244,6 +271,16 @@ export function DashboardContent() {
           </div>
 
           <div className="flex items-center space-x-4 animate-fade-in">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="bg-transparent"
+              title="Refresh subscription data"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            </Button>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               <span className="text-sm font-medium text-green-600">
