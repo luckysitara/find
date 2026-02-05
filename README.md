@@ -1,4 +1,3 @@
-
 ## How It Works
 
 1. Create and modify your project using [v0.app](https://v0.app)
