@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createConnection } from "@/lib/solana/config"
 import { verifyPayment } from "@/lib/solana/payment"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createAdminClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,79 +44,94 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Payment verified successfully, processing subscription...")
 
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
-    // Calculate EUR amount based on plan
-    let amountEur = 0
-    if (planName === "investigator") {
-      amountEur = billingPeriod === "monthly" ? 300 : 2500
-    } else if (planName === "pro") {
-      amountEur = billingPeriod === "monthly" ? 1000 : 12000
+    // Get user ID
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("wallet_address", userWallet)
+      .single()
+
+    if (userError || !user) {
+      console.error("[v0] User not found for wallet:", userWallet)
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    console.log("[v0] Processing payment with database function...")
+    // Calculate expiration date (1 month from now)
+    const expirationDate = new Date()
+    expirationDate.setMonth(expirationDate.getMonth() + 1)
 
-    try {
-      const { data: result, error: processError } = await supabase.rpc("process_payment_and_subscription", {
-        payment_signature: signature,
-        user_wallet: userWallet,
-        plan_name: planName,
-        billing_period: billingPeriod,
-        amount_sol: expectedAmount,
-        amount_eur: amountEur,
+    // Get plan details
+    let planId = null
+    let dailyRequests = 10
+    
+    if (planName === "investigator") {
+      dailyRequests = 100000
+    } else if (planName === "pro") {
+      dailyRequests = 500000
+    }
+
+    // Get the plan ID from subscription_plans table
+    const { data: plan, error: planError } = await supabase
+      .from("subscription_plans")
+      .select("id")
+      .eq("name", planName)
+      .single()
+
+    if (!planError && plan) {
+      planId = plan.id
+    }
+
+    console.log("[v0] Creating/updating subscription:", {
+      userId: user.id,
+      planName,
+      planId,
+      expiresAt: expirationDate,
+      dailyRequests,
+    })
+
+    // Delete existing subscriptions for this user
+    await supabase
+      .from("user_subscriptions")
+      .delete()
+      .eq("user_id", user.id)
+
+    // Create new subscription
+    const { data: subscription, error: subError } = await supabase
+      .from("user_subscriptions")
+      .insert({
+        user_id: user.id,
+        plan_id: planId,
+        status: "active",
+        expires_at: expirationDate.toISOString(),
       })
+      .select()
+      .single()
 
-      console.log("[v0] Database function result:", { result, processError })
-
-      if (processError) {
-        console.error("[v0] Database function error details:", {
-          message: processError.message,
-          details: processError.details,
-          hint: processError.hint,
-          code: processError.code,
-        })
-        return NextResponse.json(
-          {
-            error: "Failed to process payment and subscription",
-            details: processError.message,
-          },
-          { status: 500 },
-        )
-      }
-
-      if (!result) {
-        console.error("[v0] Database function returned false/null")
-        return NextResponse.json(
-          {
-            error: "Failed to process payment and subscription - function returned false",
-          },
-          { status: 500 },
-        )
-      }
-
-      console.log("[v0] Payment and subscription processed successfully")
-
-      const { data: verifySubscription, error: verifyError } = await supabase.rpc("get_current_subscription", {
-        user_uuid: (await supabase.from("users").select("id").eq("wallet_address", userWallet).single()).data?.id,
-      })
-
-      console.log("[v0] Subscription verification:", { verifySubscription, verifyError })
-
-      return NextResponse.json({
-        success: true,
-        message: "Payment verified and subscription activated",
-        subscription: verifySubscription,
-      })
-    } catch (dbError) {
-      console.error("[v0] Database operation failed:", dbError)
+    if (subError) {
+      console.error("[v0] Subscription creation error:", subError)
       return NextResponse.json(
         {
-          error: "Database operation failed",
-          details: dbError instanceof Error ? dbError.message : "Unknown database error",
+          error: "Failed to create subscription",
+          details: subError.message,
         },
         { status: 500 },
       )
     }
+
+    console.log("[v0] Payment and subscription processed successfully")
+
+    return NextResponse.json({
+      success: true,
+      message: "Payment verified and subscription activated",
+      subscription: {
+        planName,
+        dailyRequests,
+        status: "active",
+        expiresAt: expirationDate.toISOString(),
+      },
+    })
   } catch (error) {
     console.error("[v0] Payment verification error:", error)
     return NextResponse.json(
