@@ -58,18 +58,39 @@ export async function GET(request: NextRequest) {
         })
       }
 
-      // Get current subscription
+      // Get current subscription - directly query instead of RPC for reliability
       let subscription = null
       try {
-        const { data: subData, error: subError } = await supabase.rpc("get_current_subscription", {
-          user_uuid: user.id,
-        })
+        const { data: subData, error: subError } = await supabase
+          .from("user_subscriptions")
+          .select(
+            `
+            id,
+            status,
+            expires_at,
+            subscription_plans (
+              name,
+              daily_requests
+            )
+          `
+          )
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single()
 
-        if (!subError && subData && Array.isArray(subData) && subData.length > 0) {
-          subscription = subData[0]
+        if (!subError && subData) {
+          subscription = {
+            plan_name: subData.subscription_plans?.name || "free",
+            daily_requests: subData.subscription_plans?.daily_requests || 10,
+            status: subData.status,
+            expires_at: subData.expires_at,
+          }
         }
       } catch (subError) {
-        console.log("[v0] Subscription RPC failed:", subError)
+        console.log("[v0] Subscription query failed:", subError)
       }
 
       // Get daily usage

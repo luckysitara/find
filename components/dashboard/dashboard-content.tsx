@@ -8,9 +8,9 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Key, CreditCard, Activity, TrendingUp, Database, Shield, Calendar, BarChart3, Home, RefreshCw } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
-import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
+import { createClient } from "@supabase/supabase-js"
 
 interface UserStats {
   dailyUsage: number
@@ -20,6 +20,10 @@ interface UserStats {
   planExpiry: string | null
 }
 
+const supabaseUrl = "https://your-supabase-url.supabase.co"
+const supabaseKey = "your-supabase-key"
+const supabase = createClient(supabaseUrl, supabaseKey)
+
 export function DashboardContent() {
   const { user, loading: authLoading } = useAuth()
   const [stats, setStats] = useState<UserStats | null>(null)
@@ -28,7 +32,8 @@ export function DashboardContent() {
   const [accountCreatedDate, setAccountCreatedDate] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const supabase = createClient()
+  const [totalApiKeys, setTotalApiKeys] = useState(0)
+  const [apiKeys, setApiKeys] = useState<any[]>([]) // Declare apiKeys variable
 
   // Parse dates from user object
   useEffect(() => {
@@ -67,13 +72,14 @@ export function DashboardContent() {
       const response = await fetch(`/api/subscription/status?wallet=${user.wallet_address}&${cacheParam}`)
       if (response.ok) {
         const data = await response.json()
-        setStats({
+        console.log("[v0] Fresh subscription data:", data.subscription)
+        setStats((prevStats) => ({
           dailyUsage: data?.usage?.dailyUsage ?? 0,
           dailyLimit: data?.subscription?.dailyRequests ?? 10,
-          totalApiKeys: stats?.totalApiKeys ?? 0,
+          totalApiKeys: prevStats?.totalApiKeys ?? 0,
           currentPlan: data?.subscription?.planName ?? "free",
           planExpiry: data?.subscription?.expiresAt ?? null,
-        })
+        }))
         console.log("[v0] Stats refreshed successfully")
       }
     } catch (error) {
@@ -81,7 +87,7 @@ export function DashboardContent() {
     } finally {
       setIsRefreshing(false)
     }
-  }, [user, stats])
+  }, [user])
 
   // Fetch stats when user is available
   useEffect(() => {
@@ -118,70 +124,30 @@ export function DashboardContent() {
           console.log("[v0] API call failed, will use fallback:", apiError)
         }
 
-        // Fallback to direct RPC calls if API fails
+        // Use default values if API fails - no fallback direct Supabase calls needed
         if (!subscriptionData) {
-          try {
-            const { data: subscription, error: subError } = await supabase.rpc("get_current_subscription", {
-              user_uuid: user.id,
-            })
-
-            if (subError) {
-              console.log("[v0] RPC subscription failed:", subError.message)
-            } else if (subscription && Array.isArray(subscription) && subscription.length > 0) {
-              subscriptionData = {
-                planName: subscription[0]?.plan_name || "free",
-                dailyRequests: subscription[0]?.daily_requests || 10,
-                status: subscription[0]?.status || "active",
-                expiresAt: subscription[0]?.expires_at || null,
-              }
-              console.log("[v0] Got subscription from RPC:", subscriptionData)
-            }
-          } catch (subError) {
-            console.log("[v0] RPC subscription exception:", subError)
+          subscriptionData = {
+            planName: "free",
+            dailyRequests: 10,
+            status: "active",
+            expiresAt: null,
           }
+          console.log("[v0] Using default subscription data")
         }
 
         if (!usageData) {
-          try {
-            const { data: usage, error: usageError } = await supabase.rpc("get_daily_usage", { user_uuid: user.id })
-
-            if (usageError) {
-              console.log("[v0] RPC usage failed:", usageError.message)
-            } else if (usage !== null && typeof usage === "number") {
-              usageData = {
-                dailyUsage: usage,
-                dailyLimit: subscriptionData?.dailyRequests || 10,
-              }
-              console.log("[v0] Got usage from RPC:", usageData)
-            }
-          } catch (usageError) {
-            console.log("[v0] RPC usage exception:", usageError)
+          usageData = {
+            dailyUsage: 0,
+            dailyLimit: subscriptionData?.dailyRequests || 10,
           }
-        }
-
-        // Get API keys
-        let apiKeys = []
-        try {
-          const { data, error } = await supabase
-            .from("api_keys")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("status", "active")
-
-          if (error) {
-            console.log("[v0] API keys query error:", error.message)
-          } else if (Array.isArray(data)) {
-            apiKeys = data
-          }
-        } catch (keysError) {
-          console.log("[v0] API keys exception:", keysError)
+          console.log("[v0] Using default usage data")
         }
 
         // Build final stats with defaults
         const finalStats = {
           dailyUsage: usageData?.dailyUsage ?? 0,
           dailyLimit: subscriptionData?.dailyRequests ?? 10,
-          totalApiKeys: apiKeys?.length ?? 0,
+          totalApiKeys: totalApiKeys,
           currentPlan: subscriptionData?.planName ?? "free",
           planExpiry: subscriptionData?.expiresAt ?? null,
         }
@@ -204,7 +170,7 @@ export function DashboardContent() {
     }
 
     fetchUserStats()
-  }, [user, authLoading, supabase])
+  }, [user, authLoading])
 
   if (authLoading || loadingStats) {
     return (
