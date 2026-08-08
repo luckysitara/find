@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Wallet address required" }, { status: 400 })
     }
 
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Get user by wallet address with timeout
     const controller = new AbortController()
@@ -76,17 +76,25 @@ export async function GET(request: NextRequest) {
           )
           .eq("user_id", user.id)
           .eq("status", "active")
-          .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle()
 
+        console.log("[v0] Subscription status subData:", subData, "subError:", subError)
+
         if (!subError && subData) {
-          subscription = {
-            plan_name: subData.subscription_plans?.name || "free",
-            daily_requests: subData.subscription_plans?.daily_requests || 10,
-            status: subData.status,
-            expires_at: subData.expires_at,
+          const isNotExpired = !subData.expires_at || new Date(subData.expires_at) > new Date()
+          if (isNotExpired) {
+            const planObj = Array.isArray(subData.subscription_plans)
+              ? subData.subscription_plans[0]
+              : subData.subscription_plans
+
+            subscription = {
+              plan_name: planObj?.name || "free",
+              daily_requests: planObj?.daily_requests || 10,
+              status: subData.status,
+              expires_at: subData.expires_at,
+            }
           }
         }
       } catch (subError) {

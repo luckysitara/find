@@ -81,12 +81,30 @@ export async function POST(request: NextRequest) {
       dailyRequests = 500000
     }
 
-    // Get the plan ID from subscription_plans table
-    const { data: plan } = await supabase
+    // Get or create the plan ID from subscription_plans table
+    let { data: plan } = await supabase
       .from("subscription_plans")
       .select("id")
       .eq("name", planName)
       .maybeSingle()
+
+    if (!plan) {
+      console.log("[v0] Plan missing in DB, creating plan:", planName)
+      const { data: newPlan, error: newPlanError } = await supabase
+        .from("subscription_plans")
+        .insert({
+          name: planName,
+          daily_requests: dailyRequests,
+          monthly_price_eur: planName === "investigator" ? 300 : 1000,
+          yearly_price_eur: planName === "investigator" ? 2500 : 12000,
+        })
+        .select("id")
+        .single()
+      
+      if (!newPlanError && newPlan) {
+        plan = newPlan
+      }
+    }
 
     if (plan) {
       planId = plan.id
