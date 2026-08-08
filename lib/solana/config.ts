@@ -1,7 +1,7 @@
 import { clusterApiUrl, Connection } from "@solana/web3.js"
 
 // Network configuration
-export const SOLANA_NETWORK = process.env.NODE_ENV === "production" ? "mainnet-beta" : "devnet"
+export const SOLANA_NETWORK = (process.env.NEXT_PUBLIC_SOLANA_NETWORK || (process.env.NODE_ENV === "production" ? "mainnet-beta" : "devnet")) as "mainnet-beta" | "devnet" | "testnet"
 export const RPC_ENDPOINT = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || clusterApiUrl(SOLANA_NETWORK)
 
 // Merchant wallet configuration

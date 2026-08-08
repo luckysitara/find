@@ -9,7 +9,8 @@ import { useMemo } from "react"
 import "@solana/wallet-adapter-react-ui/styles.css"
 
 export const useWalletConfig = () => {
-  const network = WalletAdapterNetwork.Devnet
+  const solNetwork = process.env.NEXT_PUBLIC_SOLANA_NETWORK || (process.env.NODE_ENV === "production" ? "mainnet-beta" : "devnet")
+  const network = solNetwork === "mainnet-beta" || solNetwork === "mainnet" ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet
 
   const endpoint = useMemo(() => {
     const customRpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL
