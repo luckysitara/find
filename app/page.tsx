@@ -200,8 +200,8 @@ export default function HomePage() {
                   <Check className="h-4 w-4 text-primary" />
                   <span>Community support</span>
                 </div>
-                <Button className="w-full mt-6 bg-transparent" variant="outline">
-                  Get Started
+                <Button className="w-full mt-6 bg-transparent" variant="outline" asChild>
+                  <Link href="/subscription">Get Started</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -234,7 +234,9 @@ export default function HomePage() {
                   <Check className="h-4 w-4 text-primary" />
                   <span>IOC & threat data export</span>
                 </div>
-                <Button className="w-full mt-6">Subscribe with SOL</Button>
+                <Button className="w-full mt-6" asChild>
+                  <Link href="/subscription">Subscribe with SOL</Link>
+                </Button>
               </CardContent>
             </Card>
 
@@ -269,7 +271,9 @@ export default function HomePage() {
                   <Check className="h-4 w-4 text-primary" />
                   <span>Team management</span>
                 </div>
-                <Button className="w-full mt-6">Subscribe with SOL</Button>
+                <Button className="w-full mt-6" asChild>
+                  <Link href="/subscription">Subscribe with SOL</Link>
+                </Button>
               </CardContent>
             </Card>
           </div>

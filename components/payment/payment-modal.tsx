@@ -16,6 +16,7 @@ import {
   createTipLink,
   verifyPayment,
 } from "@/lib/solana/payment"
+import { MERCHANT_WALLET_ADDRESS } from "@/lib/solana/config"
 import { PaymentMonitor } from "@/lib/solana/payment-monitor"
 import { useToast } from "@/hooks/use-toast"
 import QRCode from "qrcode"
@@ -103,7 +104,7 @@ export function PaymentModal({
       console.log("[v0] Generating payment options...")
       console.log("[v0] Current wallet state:", { connected, publicKey: publicKey?.toString() })
 
-      const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET || ""
+      const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET || MERCHANT_WALLET_ADDRESS
       if (!merchantWallet) {
         console.error("[v0] Merchant wallet not configured")
         return
@@ -217,7 +218,7 @@ export function PaymentModal({
       console.log("[v0] Transaction confirmed")
 
       console.log("[v0] Verifying payment and updating subscription...")
-      const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET || ""
+      const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET || MERCHANT_WALLET_ADDRESS
       console.log("[v0] Merchant wallet:", merchantWallet)
       console.log("[v0] Expected SOL amount:", solAmount)
 

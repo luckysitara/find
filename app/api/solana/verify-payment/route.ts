@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createConnection } from "@/lib/solana/config"
+import { createConnection, MERCHANT_WALLET_ADDRESS } from "@/lib/solana/config"
 import { verifyPayment } from "@/lib/solana/payment"
 import { createClient, createAdminClient } from "@/lib/supabase/server"
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     const connection = createConnection()
-    const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET
+    const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET || MERCHANT_WALLET_ADDRESS
 
     if (!merchantWallet) {
       console.error("[v0] Merchant wallet not configured")
@@ -46,16 +46,25 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createAdminClient()
 
-    // Get user ID
-    const { data: user, error: userError } = await supabase
+    // Get user ID or create if missing
+    let { data: user } = await supabase
       .from("users")
       .select("id")
       .eq("wallet_address", userWallet)
-      .single()
+      .maybeSingle()
 
-    if (userError || !user) {
-      console.error("[v0] User not found for wallet:", userWallet)
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    if (!user) {
+      const { data: newUser, error: createError } = await supabase
+        .from("users")
+        .insert({ wallet_address: userWallet })
+        .select("id")
+        .single()
+      
+      if (createError || !newUser) {
+        console.error("[v0] Failed to create user for wallet:", userWallet, createError)
+        return NextResponse.json({ error: "Failed to create user record" }, { status: 500 })
+      }
+      user = newUser
     }
 
     // Calculate expiration date (1 month from now)
@@ -73,13 +82,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the plan ID from subscription_plans table
-    const { data: plan, error: planError } = await supabase
+    const { data: plan } = await supabase
       .from("subscription_plans")
       .select("id")
       .eq("name", planName)
-      .single()
+      .maybeSingle()
 
-    if (!planError && plan) {
+    if (plan) {
       planId = plan.id
     }
 

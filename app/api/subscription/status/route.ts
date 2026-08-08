@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         .from("users")
         .select("id")
         .eq("wallet_address", walletAddress)
-        .single()
+        .maybeSingle()
 
       clearTimeout(timeoutId)
 
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
           .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
           .order("created_at", { ascending: false })
           .limit(1)
-          .single()
+          .maybeSingle()
 
         if (!subError && subData) {
           subscription = {

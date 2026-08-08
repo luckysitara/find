@@ -31,6 +31,7 @@ export class PaymentMonitor {
       try {
         const transaction = await this.connection.getTransaction(signature, {
           commitment: "confirmed",
+          maxSupportedTransactionVersion: 0,
         })
 
         if (transaction && transaction.meta) {
@@ -68,6 +69,7 @@ export class PaymentMonitor {
 
           const transaction = await this.connection.getTransaction(sigInfo.signature, {
             commitment: "confirmed",
+            maxSupportedTransactionVersion: 0,
           })
 
           if (this.isMatchingPayment(transaction, userWallet, expectedAmount)) {

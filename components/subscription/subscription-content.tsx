@@ -47,61 +47,88 @@ export function SubscriptionContent() {
   const { toast } = useToast()
   const supabase = createClient()
 
+  const DEFAULT_PLANS: SubscriptionPlan[] = [
+    {
+      id: "free-plan",
+      name: "free",
+      daily_requests: 10,
+      monthly_price_eur: 0,
+      yearly_price_eur: 0,
+    },
+    {
+      id: "investigator-plan",
+      name: "investigator",
+      daily_requests: 300,
+      monthly_price_eur: 300,
+      yearly_price_eur: 2500,
+    },
+    {
+      id: "pro-plan",
+      name: "pro",
+      daily_requests: 1000,
+      monthly_price_eur: 1000,
+      yearly_price_eur: 12000,
+    },
+  ]
+
   const fetchSubscriptionData = async () => {
-    if (!user) return
-
     try {
-      console.log("[v0] Fetching subscription data for user:", user.id)
+      console.log("[v0] Fetching subscription data...")
 
-      // Fetch available plans
+      // Fetch available plans from Supabase
       const { data: plansData, error: plansError } = await supabase
         .from("subscription_plans")
         .select("*")
         .order("monthly_price_eur", { ascending: true })
 
-      if (plansError) throw plansError
-
-      // Update the plans data with correct pricing
-      const updatedPlans = plansData?.map((plan) => {
-        if (plan.name === "investigator") {
-          return {
-            ...plan,
-            monthly_price_eur: 300,
-            yearly_price_eur: 2500,
-          }
-        } else if (plan.name === "pro") {
-          return {
-            ...plan,
-            monthly_price_eur: 1000,
-            yearly_price_eur: 12000,
-          }
-        }
-        return plan
-      })
-
-      const response = await fetch(`/api/subscription/status?wallet=${user.wallet_address}`)
-      if (response.ok) {
-        const data = await response.json()
-        setCurrentSubscription({
-          plan_name: data.subscription.planName,
-          daily_requests: data.subscription.dailyRequests,
-          status: data.subscription.status,
-          expires_at: data.subscription.expiresAt,
-        })
-      } else {
-        // Fallback to direct database query
-        const { data: currentSub } = await supabase.rpc("get_current_subscription", { user_uuid: user.id })
-        setCurrentSubscription(currentSub?.[0] || null)
+      if (plansError) {
+        console.warn("[v0] Could not fetch plans from DB, using defaults:", plansError)
       }
 
-      setPlans(updatedPlans || [])
+      let updatedPlans: SubscriptionPlan[] = []
+
+      if (plansData && plansData.length > 0) {
+        updatedPlans = plansData.map((plan) => {
+          if (plan.name === "investigator") {
+            return {
+              ...plan,
+              monthly_price_eur: 300,
+              yearly_price_eur: 2500,
+            }
+          } else if (plan.name === "pro") {
+            return {
+              ...plan,
+              monthly_price_eur: 1000,
+              yearly_price_eur: 12000,
+            }
+          }
+          return plan
+        })
+      } else {
+        updatedPlans = DEFAULT_PLANS
+      }
+
+      setPlans(updatedPlans)
+
+      if (user) {
+        const response = await fetch(`/api/subscription/status?wallet=${user.wallet_address}`)
+        if (response.ok) {
+          const data = await response.json()
+          setCurrentSubscription({
+            plan_name: data.subscription.planName,
+            daily_requests: data.subscription.dailyRequests,
+            status: data.subscription.status,
+            expires_at: data.subscription.expiresAt,
+          })
+        } else {
+          // Fallback to direct database query
+          const { data: currentSub } = await supabase.rpc("get_current_subscription", { user_uuid: user.id })
+          setCurrentSubscription(currentSub?.[0] || null)
+        }
+      }
     } catch (error) {
       console.error("[v0] Failed to fetch subscription data:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load subscription data",
-        variant: "destructive",
-      })
+      setPlans(DEFAULT_PLANS)
     } finally {
       setLoadingData(false)
     }
@@ -112,7 +139,7 @@ export function SubscriptionContent() {
   }, [user, supabase, toast])
 
   const handleUpgrade = (planName: string, billing: "monthly" | "yearly") => {
-    const plan = plans.find((p) => p.name === planName)
+    const plan = plans.find((p) => p.name === planName) || DEFAULT_PLANS.find((p) => p.name === planName)
     if (!plan) return
 
     console.log("[v0] Upgrade button clicked:", { planName, billing, plan })

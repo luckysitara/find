@@ -16,24 +16,11 @@ plan_data AS (
 DELETE FROM public.user_subscriptions 
 WHERE user_id = (SELECT id FROM user_data);
 
--- Get user ID and plan ID again for insert
-WITH user_data AS (
-  SELECT id FROM public.users 
-  WHERE wallet_address = 'Dc3QQVbiBBk8NCF69kcDSerNVMrZoKbg2KBz1NofsXjs'
-),
-plan_data AS (
-  SELECT id FROM public.subscription_plans 
-  WHERE name = 'investigator'
-)
--- Insert new subscription with 1 month expiration
+-- Insert new subscription with 1 month expiration if user exists
 INSERT INTO public.user_subscriptions (user_id, plan_id, status, expires_at, created_at)
-VALUES (
-  (SELECT id FROM user_data),
-  (SELECT id FROM plan_data),
-  'active',
-  NOW() + INTERVAL '1 month',
-  NOW()
-);
+SELECT u.id, p.id, 'active', NOW() + INTERVAL '1 month', NOW()
+FROM (SELECT id FROM public.users WHERE wallet_address = 'Dc3QQVbiBBk8NCF69kcDSerNVMrZoKbg2KBz1NofsXjs') u
+CROSS JOIN (SELECT id FROM public.subscription_plans WHERE name = 'investigator') p;
 
 COMMIT;
 
