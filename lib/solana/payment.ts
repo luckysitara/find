@@ -2,7 +2,7 @@ import { type Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SO
 import { MERCHANT_WALLET_ADDRESS } from "./config"
 import { convertEurToSol as convertEurToSolRate } from "./exchange-rate"
 
-const MERCHANT_WALLET = new PublicKey(MERCHANT_WALLET_ADDRESS)
+const getMerchantWallet = () => new PublicKey(MERCHANT_WALLET_ADDRESS)
 
 export interface PaymentRequest {
   amount: number // Amount in EUR
@@ -36,7 +36,7 @@ export const createPaymentTransaction = async (
   // Add transfer instruction
   const transferInstruction = SystemProgram.transfer({
     fromPubkey: new PublicKey(userWallet),
-    toPubkey: MERCHANT_WALLET,
+    toPubkey: getMerchantWallet(),
     lamports,
   })
 
@@ -58,12 +58,38 @@ export const generatePaymentUrl = async (paymentRequest: PaymentRequest): Promis
 
   // Create Solana Pay URL
   const url = new URL("solana:")
-  url.searchParams.set("recipient", MERCHANT_WALLET.toString())
+  url.searchParams.set("recipient", getMerchantWallet().toString())
   url.searchParams.set("amount", solAmount.toString())
-  url.searchParams.set("label", `findxo ${paymentRequest.planName} Plan`)
-  url.searchParams.set("message", `Subscribe to ${paymentRequest.planName} plan (${paymentRequest.billingPeriod})`)
+  url.searchParams.set("label", "findxo Subscription")
+  url.searchParams.set("message", `${paymentRequest.planName} (${paymentRequest.billingPeriod})`)
 
   return url.toString()
+}
+
+export const generatePaymentQRData = async (paymentRequest: PaymentRequest) => {
+  const solAmount = await convertEurToSol(paymentRequest.amount)
+  const paymentUrl = await generatePaymentUrl(paymentRequest)
+
+  return {
+    qrData: paymentUrl,
+    solAmount,
+    recipient: getMerchantWallet().toString(),
+  }
+}
+
+export const createPaymentDetails = async (
+  connection: Connection,
+  paymentRequest: PaymentRequest,
+) => {
+  const { transaction, amount } = await createPaymentTransaction(connection, paymentRequest)
+  const paymentUrl = await generatePaymentUrl(paymentRequest)
+
+  return {
+    transaction,
+    amount,
+    recipient: getMerchantWallet().toString(),
+    paymentUrl,
+  }
 }
 
 export const createTipLink = async (paymentRequest: PaymentRequest): Promise<string> => {
@@ -73,7 +99,7 @@ export const createTipLink = async (paymentRequest: PaymentRequest): Promise<str
     // In production, replace with actual TipLink SDK
     const tipLinkData = {
       amount: solAmount,
-      recipient: MERCHANT_WALLET.toString(),
+      recipient: getMerchantWallet().toString(),
       label: `findxo ${paymentRequest.planName} Subscription`,
       message: `Subscribe to ${paymentRequest.planName} plan (${paymentRequest.billingPeriod})`,
       metadata: {

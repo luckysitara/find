@@ -4,6 +4,8 @@ import { verifyPayment } from "@/lib/solana/payment"
 import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { PLAN_PRICES } from "@/lib/subscription/config"
 
+export const dynamic = "force-dynamic"
+
 export async function POST(request: NextRequest) {
   try {
     const { signature, expectedAmount, userWallet, planName, billingPeriod } = await request.json()
