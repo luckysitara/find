@@ -2,7 +2,12 @@
 
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base"
 import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets"
-import { SolanaMobileWalletAdapter } from "@solana-mobile/wallet-adapter-mobile"
+import {
+  SolanaMobileWalletAdapter,
+  createDefaultAddressSelector,
+  createDefaultAuthorizationResultCache,
+  createDefaultWalletNotFoundHandler,
+} from "@solana-mobile/wallet-adapter-mobile"
 import { clusterApiUrl } from "@solana/web3.js"
 import { useMemo } from "react"
 
@@ -25,30 +30,15 @@ export const useWalletConfig = () => {
       const walletAdapters = [
         // Mobile Wallet Adapter - must be first for mobile detection
         new SolanaMobileWalletAdapter({
+          addressSelector: createDefaultAddressSelector(),
           appIdentity: {
             name: "findxo",
             uri: typeof window !== "undefined" ? window.location.origin : "https://findxo.app",
             icon: "/favicon.ico",
           },
-          authorizationResultCache: {
-            clear: () => {
-              if (typeof window !== "undefined") {
-                window.localStorage.removeItem("solana-mobile-auth")
-              }
-            },
-            get: () => {
-              if (typeof window !== "undefined") {
-                const stored = window.localStorage.getItem("solana-mobile-auth")
-                return stored ? JSON.parse(stored) : undefined
-              }
-              return undefined
-            },
-            set: (value) => {
-              if (typeof window !== "undefined") {
-                window.localStorage.setItem("solana-mobile-auth", JSON.stringify(value))
-              }
-            },
-          },
+          authorizationResultCache: createDefaultAuthorizationResultCache(),
+          cluster: network as any,
+          onWalletNotFound: createDefaultWalletNotFoundHandler(),
         }),
         // Standard wallet adapters for browser extensions
         new PhantomWalletAdapter(),

@@ -38,7 +38,7 @@ export function WalletContextProvider({ children }: WalletContextProviderProps) 
         }}
         localStorageKey="wallet-adapter"
       >
-        <WalletModalProvider featuredWallets={2}>{children}</WalletModalProvider>
+        <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
   )

@@ -67,7 +67,7 @@ export function SubscriptionDebug() {
       setDebugInfo(debug)
     } catch (error) {
       console.error("Debug check failed:", error)
-      setDebugInfo({ error: error.message })
+      setDebugInfo({ error: error instanceof Error ? error.message : String(error) })
     } finally {
       setLoading(false)
     }

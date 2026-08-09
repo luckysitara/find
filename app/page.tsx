@@ -5,6 +5,8 @@ import { Check, Search, Shield, Zap, Database, Key, Globe, LayoutDashboard } fro
 import { WalletButton } from "@/components/wallet/wallet-button"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
 import Link from "next/link"
+import { PLAN_PRICES } from "@/lib/subscription/config"
+import { calculateYearlySavings } from "@/lib/subscription/utils"
 
 export default function HomePage() {
   return (
@@ -212,9 +214,11 @@ export default function HomePage() {
               <CardHeader className="text-center pb-8">
                 <CardTitle className="text-2xl">Investigator</CardTitle>
                 <div className="text-4xl font-bold">
-                  €300<span className="text-lg font-normal text-muted-foreground">/month</span>
+                  €{PLAN_PRICES.investigator.monthly}<span className="text-lg font-normal text-muted-foreground">/month</span>
                 </div>
-                <div className="text-sm text-muted-foreground">€2,500/year (save 17%)</div>
+                <div className="text-sm text-muted-foreground">
+                  €{PLAN_PRICES.investigator.yearly.toLocaleString()}/year (save {calculateYearlySavings(PLAN_PRICES.investigator.monthly, PLAN_PRICES.investigator.yearly)}%)
+                </div>
                 <CardDescription>For cybersecurity professionals</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -245,9 +249,11 @@ export default function HomePage() {
               <CardHeader className="text-center pb-8">
                 <CardTitle className="text-2xl">Pro</CardTitle>
                 <div className="text-4xl font-bold">
-                  €1000<span className="text-lg font-normal text-muted-foreground">/month</span>
+                  €{PLAN_PRICES.pro.monthly}<span className="text-lg font-normal text-muted-foreground">/month</span>
                 </div>
-                <div className="text-sm text-muted-foreground">€12,000/year (save 0%)</div>
+                <div className="text-sm text-muted-foreground">
+                  €{PLAN_PRICES.pro.yearly.toLocaleString()}/year (save {calculateYearlySavings(PLAN_PRICES.pro.monthly, PLAN_PRICES.pro.yearly)}%)
+                </div>
                 <CardDescription>For security teams and organizations</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

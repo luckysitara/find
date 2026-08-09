@@ -1,3 +1,5 @@
+import { PLAN_PRICES } from "./config"
+
 export interface SubscriptionValidation {
   isValid: boolean
   errors: string[]
@@ -32,8 +34,8 @@ export function validateSubscriptionData(data: {
 
   // Validate expected amounts
   const expectedAmounts = {
-    investigator: { monthly: 300, yearly: 2500 },
-    pro: { monthly: 1000, yearly: 12000 },
+    investigator: { monthly: PLAN_PRICES.investigator.monthly, yearly: PLAN_PRICES.investigator.yearly },
+    pro: { monthly: PLAN_PRICES.pro.monthly, yearly: PLAN_PRICES.pro.yearly },
   }
 
   const planKey = data.planName.toLowerCase() as keyof typeof expectedAmounts
@@ -67,7 +69,7 @@ export function validateSubscriptionData(data: {
 
 export function validatePaymentSignature(signature: string): boolean {
   // Basic validation for Solana transaction signature
-  return signature && signature.length >= 64 && /^[A-Za-z0-9]+$/.test(signature)
+  return Boolean(signature && signature.length >= 64 && /^[A-Za-z0-9]+$/.test(signature))
 }
 
 export function calculateExpectedSolAmount(eurAmount: number, exchangeRate: number): number {

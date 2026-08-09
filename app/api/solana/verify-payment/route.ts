@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { createConnection, MERCHANT_WALLET_ADDRESS } from "@/lib/solana/config"
 import { verifyPayment } from "@/lib/solana/payment"
 import { createClient, createAdminClient } from "@/lib/supabase/server"
+import { PLAN_PRICES } from "@/lib/subscription/config"
 
 export async function POST(request: NextRequest) {
   try {
@@ -95,8 +96,8 @@ export async function POST(request: NextRequest) {
         .insert({
           name: planName,
           daily_requests: dailyRequests,
-          monthly_price_eur: planName === "investigator" ? 300 : 1000,
-          yearly_price_eur: planName === "investigator" ? 2500 : 12000,
+          monthly_price_eur: planName === "investigator" ? PLAN_PRICES.investigator.monthly : PLAN_PRICES.pro.monthly,
+          yearly_price_eur: planName === "investigator" ? PLAN_PRICES.investigator.yearly : PLAN_PRICES.pro.yearly,
         })
         .select("id")
         .single()

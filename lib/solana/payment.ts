@@ -138,8 +138,10 @@ export const verifyPayment = async (
     }
 
     // Find merchant account index
-    const accountKeys = transaction.transaction.message.accountKeys.map((key) => key.toString())
-    const merchantIndex = accountKeys.findIndex((key) => key === expectedRecipient)
+    const message = transaction.transaction.message as any
+    const rawKeys: any[] = message.accountKeys || message.staticAccountKeys || (message.getAccountKeys ? message.getAccountKeys().staticAccountKeys : [])
+    const accountKeys: string[] = rawKeys.map((key: any) => key.toString())
+    const merchantIndex = accountKeys.findIndex((key: string) => key === expectedRecipient)
 
     // Handle self-transfer case (sender == recipient during testing)
     const senderAddress = accountKeys[0]

@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { PaymentModal } from "@/components/payment/payment-modal"
+import { PLAN_PRICES } from "@/lib/subscription/config"
 
 interface SubscriptionPlan {
   id: string
@@ -59,15 +60,15 @@ export function SubscriptionContent() {
       id: "investigator-plan",
       name: "investigator",
       daily_requests: 300,
-      monthly_price_eur: 300,
-      yearly_price_eur: 2500,
+      monthly_price_eur: PLAN_PRICES.investigator.monthly,
+      yearly_price_eur: PLAN_PRICES.investigator.yearly,
     },
     {
       id: "pro-plan",
       name: "pro",
       daily_requests: 1000,
-      monthly_price_eur: 1000,
-      yearly_price_eur: 12000,
+      monthly_price_eur: PLAN_PRICES.pro.monthly,
+      yearly_price_eur: PLAN_PRICES.pro.yearly,
     },
   ]
 
@@ -92,14 +93,14 @@ export function SubscriptionContent() {
           if (plan.name === "investigator") {
             return {
               ...plan,
-              monthly_price_eur: 300,
-              yearly_price_eur: 2500,
+              monthly_price_eur: PLAN_PRICES.investigator.monthly,
+              yearly_price_eur: PLAN_PRICES.investigator.yearly,
             }
           } else if (plan.name === "pro") {
             return {
               ...plan,
-              monthly_price_eur: 1000,
-              yearly_price_eur: 12000,
+              monthly_price_eur: PLAN_PRICES.pro.monthly,
+              yearly_price_eur: PLAN_PRICES.pro.yearly,
             }
           }
           return plan
@@ -333,7 +334,7 @@ export function SubscriptionContent() {
                         <p className="text-sm text-muted-foreground mb-3">
                           Get more requests and advanced features with our paid plans.
                         </p>
-                        <Button size="sm" onClick={() => document.querySelector('[value="plans"]')?.click()}>
+                        <Button size="sm" onClick={() => (document.querySelector('[value="plans"]') as HTMLElement)?.click()}>
                           View Plans
                         </Button>
                       </div>
@@ -346,7 +347,7 @@ export function SubscriptionContent() {
                     <p className="text-muted-foreground mb-4">
                       You don't have an active subscription. Choose a plan to get started.
                     </p>
-                    <Button onClick={() => document.querySelector('[value="plans"]')?.click()}>View Plans</Button>
+                    <Button onClick={() => (document.querySelector('[value="plans"]') as HTMLElement)?.click()}>View Plans</Button>
                   </div>
                 )}
               </CardContent>
