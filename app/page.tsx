@@ -1,7 +1,21 @@
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Check, Search, Shield, Zap, Database, Key, Globe, LayoutDashboard } from "lucide-react"
+import { 
+  Check, 
+  Search, 
+  Shield, 
+  Zap, 
+  Database, 
+  Key, 
+  Globe, 
+  LayoutDashboard, 
+  Terminal, 
+  ExternalLink,
+  Lock,
+  Radio,
+  Cpu
+} from "lucide-react"
 import { WalletButton } from "@/components/wallet/wallet-button"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
 import Link from "next/link"
@@ -10,45 +24,43 @@ import { calculateYearlySavings } from "@/lib/subscription/utils"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-              <Search className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold">findxo</span>
+    <div className="min-h-screen bg-background text-foreground bg-grid-pattern flex flex-col">
+      {/* Top Console Navigation Bar */}
+      <header className="border-b border-border/80 bg-background/90 backdrop-blur sticky top-0 z-50">
+        <div className="container max-w-7xl mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center space-x-6">
+            <Link href="/" className="flex items-center space-x-2.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded border border-primary/30 bg-primary/15 text-primary">
+                <Search className="h-3.5 w-3.5" />
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-bold tracking-tight text-base font-mono-data">findxo</span>
+                <span className="text-[10px] uppercase font-mono-data tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                  INTEL
+                </span>
+              </div>
+            </Link>
+
+            <nav className="hidden md:flex items-center space-x-5 font-mono-data text-xs">
+              <Link href="#capabilities" className="text-muted-foreground hover:text-foreground transition-colors">
+                CAPABILITIES
+              </Link>
+              <Link href="#terminal" className="text-muted-foreground hover:text-foreground transition-colors">
+                API_SPEC
+              </Link>
+              <Link href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+                CLEARANCE_TIERS
+              </Link>
+            </nav>
           </div>
 
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link
-              href="#features"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Features
-            </Link>
-            <Link
-              href="#pricing"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Pricing
-            </Link>
-            <Link
-              href="#api"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              API
-            </Link>
-            <Button variant="outline" size="sm" asChild className="bg-transparent">
-              <Link href="/dashboard" className="flex items-center gap-2">
-                <LayoutDashboard className="h-4 w-4" />
-                Dashboard
+          <div className="flex items-center space-x-3">
+            <Button variant="outline" size="sm" asChild className="h-8 border-border bg-secondary/50 font-mono-data text-xs gap-1.5">
+              <Link href="/dashboard">
+                <LayoutDashboard className="h-3.5 w-3.5" />
+                CONSOLE
               </Link>
             </Button>
-          </nav>
-
-          <div className="flex items-center space-x-4">
             <ThemeToggle />
             <WalletButton />
           </div>
@@ -56,334 +68,255 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-24 px-4">
-        <div className="container max-w-6xl mx-auto text-center">
-          <Badge variant="secondary" className="mb-6">
-            Powered by Solana
-          </Badge>
+      <section className="relative pt-20 pb-16 px-4 overflow-hidden border-b border-border/40">
+        <div className="container max-w-6xl mx-auto text-center relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-mono-data mb-6">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
+            <span>DECENTRALIZED THREAT INTELLIGENCE • ED25519 VERIFIED</span>
+          </div>
 
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-balance mb-6">
-            Dark Web Intelligence
-            <span className="text-primary"> Redefined</span>
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-balance mb-6 font-mono-data">
+            Dark Web Intelligence <br />
+            <span className="text-primary tracking-normal">Indexed in Realtime.</span>
           </h1>
 
-          <p className="text-xl text-muted-foreground text-balance mb-8 max-w-3xl mx-auto">
-            Access comprehensive dark web and darknet intelligence through our advanced OSINT platform. Secure,
-            anonymous, and built for cybersecurity professionals who need reliable underground intelligence.
+          <p className="text-base sm:text-lg text-muted-foreground text-balance mb-8 max-w-2xl mx-auto">
+            Industrial-grade OSINT search engine querying underground forums, breach dumps, and Tor hidden services. Query directly via low-latency REST APIs settled through Solana Pay.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <WalletButton />
-            <Button variant="outline" size="lg" className="text-lg px-8 bg-transparent">
-              View Documentation
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+            <Button size="lg" asChild className="h-11 px-6 bg-primary text-primary-foreground font-mono-data text-xs font-semibold hover:bg-primary/90">
+              <Link href="/dashboard">ENTER CONSOLE</Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild className="h-11 px-6 border-border bg-secondary/40 font-mono-data text-xs hover:bg-secondary">
+              <Link href="#terminal">INSPECT API SPEC</Link>
             </Button>
           </div>
 
-          {/* Search Demo */}
-          <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-chart-1/20 rounded-lg blur-xl" />
-              <Card className="relative border-border/50 bg-card/50 backdrop-blur">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-3 text-left">
-                    <Search className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-muted-foreground">Search dark web marketplaces, forums, leaks...</span>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* Interactive Mock Terminal */}
+          <div className="max-w-3xl mx-auto text-left cyber-panel rounded-lg border border-border/80 shadow-2xl overflow-hidden" id="terminal">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-secondary/80 border-b border-border/60">
+              <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
+                <div className="h-2.5 w-2.5 rounded-full bg-amber-500/80" />
+                <div className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
+                <span className="text-xs font-mono-data text-muted-foreground ml-2">curl -X POST https://api.findxo.intel/v1/search</span>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono-data border-emerald-500/30 text-emerald-400">
+                HTTP 200 OK
+              </Badge>
+            </div>
+
+            <div className="p-4 font-mono-data text-xs bg-black/90 text-zinc-300 space-y-2 overflow-x-auto leading-relaxed">
+              <div className="text-zinc-500">// Request payload</div>
+              <div>
+                <span className="text-pink-400">POST</span> /v1/search HTTP/2
+              </div>
+              <div className="text-zinc-400">
+                Authorization: Bearer fxo_live_8a49f87c2...
+              </div>
+              <div className="text-zinc-400">
+                {"{"} &quot;target&quot;: &quot;leaked_corporation.onion&quot;, &quot;depth&quot;: &quot;deep_crawl&quot; {"}"}
+              </div>
+              <div className="border-t border-zinc-800 my-2 pt-2 text-zinc-500">// Response snippet (latency: 18ms)</div>
+              <div className="text-emerald-400">
+                {`{
+  "status": "success",
+  "records_matched": 14208,
+  "sources": ["tor_hidden_service", "breach_dump_v3", "telegram_channel"],
+  "first_seen": "2026-11-12T14:22:01Z",
+  "threat_level": "CRITICAL_COMPROMISE"
+}`}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-24 px-4 bg-muted/30">
+      {/* Capabilities Section */}
+      <section id="capabilities" className="py-20 px-4 border-b border-border/40">
         <div className="container max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Dark Web Intelligence Arsenal</h2>
-            <p className="text-xl text-muted-foreground text-balance max-w-2xl mx-auto">
-              Everything you need for comprehensive darknet research, threat intelligence, and underground data
-              analysis.
+          <div className="text-center mb-14">
+            <span className="text-xs uppercase font-mono-data text-primary tracking-widest">SYSTEM ARCHITECTURE</span>
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight font-mono-data mt-2">
+              Hardened Intelligence Infrastructure
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto mt-2">
+              Designed for digital forensic units, threat intelligence teams, and Web3 security researchers.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <Card className="border-border/50">
-              <CardHeader>
-                <Database className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Underground Database</CardTitle>
-                <CardDescription>
-                  Access millions of records from dark web marketplaces, forums, paste sites, and breach databases.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-border/50">
-              <CardHeader>
-                <Zap className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Lightning Fast Search</CardTitle>
-                <CardDescription>
-                  Advanced indexing across .onion sites and hidden services delivers results in milliseconds.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-border/50">
-              <CardHeader>
-                <Shield className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Anonymous & Secure</CardTitle>
-                <CardDescription>
-                  Tor-compatible infrastructure with end-to-end encryption for safe darknet intelligence gathering.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-border/50">
-              <CardHeader>
-                <Key className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>OSINT API Access</CardTitle>
-                <CardDescription>
-                  Integrate dark web intelligence into your threat hunting and cybersecurity applications.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-border/50">
-              <CardHeader>
-                <Globe className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Darknet Coverage</CardTitle>
-                <CardDescription>
-                  Comprehensive monitoring of Tor hidden services, I2P networks, and underground communities.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-border/50">
-              <CardHeader>
-                <Search className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Threat Intelligence Filters</CardTitle>
-                <CardDescription>
-                  Advanced filtering by threat actors, malware families, compromised credentials, and IOCs.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-24 px-4">
-        <div className="container max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Choose Your Plan</h2>
-            <p className="text-xl text-muted-foreground text-balance max-w-2xl mx-auto">
-              Flexible pricing for cybersecurity professionals and threat intelligence teams. Pay with SOL.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Free Plan */}
-            <Card className="border-border/50">
-              <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl">Free</CardTitle>
-                <div className="text-4xl font-bold">€0</div>
-                <CardDescription>Perfect for getting started</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>10 API requests per day</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>Basic dark web search</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>Community support</span>
-                </div>
-                <Button className="w-full mt-6 bg-transparent" variant="outline" asChild>
-                  <Link href="/subscription">Get Started</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Investigator Plan */}
-            <Card className="border-primary/50 relative">
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Most Popular</Badge>
-              <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl">Investigator</CardTitle>
-                <div className="text-4xl font-bold">
-                  €{PLAN_PRICES.investigator.monthly}<span className="text-lg font-normal text-muted-foreground">/month</span>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  €{PLAN_PRICES.investigator.yearly.toLocaleString()}/year (save {calculateYearlySavings(PLAN_PRICES.investigator.monthly, PLAN_PRICES.investigator.yearly)}%)
-                </div>
-                <CardDescription>For cybersecurity professionals</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>300 API requests per day</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>Advanced threat intelligence filters</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>Priority support</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>IOC & threat data export</span>
-                </div>
-                <Button className="w-full mt-6" asChild>
-                  <Link href="/subscription">Subscribe with SOL</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Pro Plan */}
-            <Card className="border-border/50">
-              <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl">Pro</CardTitle>
-                <div className="text-4xl font-bold">
-                  €{PLAN_PRICES.pro.monthly}<span className="text-lg font-normal text-muted-foreground">/month</span>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  €{PLAN_PRICES.pro.yearly.toLocaleString()}/year (save {calculateYearlySavings(PLAN_PRICES.pro.monthly, PLAN_PRICES.pro.yearly)}%)
-                </div>
-                <CardDescription>For security teams and organizations</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>1500 API requests per day</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>Full OSINT API access</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>Dedicated support</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>Custom threat intel integrations</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>Team management</span>
-                </div>
-                <Button className="w-full mt-6" asChild>
-                  <Link href="/subscription">Subscribe with SOL</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 px-4 bg-muted/30">
-        <div className="container max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Start Threat Hunting?</h2>
-          <p className="text-xl text-muted-foreground mb-8 text-balance">
-            Connect your Solana wallet and get instant access to our dark web intelligence platform.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <WalletButton />
-            <Button variant="outline" size="lg" className="text-lg px-8 bg-transparent">
-              Learn More
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border/40 py-12 px-4">
-        <div className="container max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-                  <Search className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <span className="text-xl font-bold">findxo</span>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="cyber-panel p-6 rounded-lg border border-border/80 space-y-3">
+              <div className="h-10 w-10 rounded border border-border bg-secondary flex items-center justify-center">
+                <Database className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-sm text-muted-foreground">
-                Professional dark web intelligence platform powered by blockchain technology.
+              <h3 className="font-mono-data text-base font-bold text-foreground">Underground Lake</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Aggregates millions of records across authenticated hidden services, darknet bazaars, and Pastebin-type repositories.
               </p>
             </div>
 
-            <div>
-              <h3 className="font-semibold mb-3">Product</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="#" className="hover:text-foreground transition-colors">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-foreground transition-colors">
-                    API
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-foreground transition-colors">
-                    Documentation
-                  </Link>
-                </li>
-              </ul>
+            <div className="cyber-panel p-6 rounded-lg border border-border/80 space-y-3">
+              <div className="h-10 w-10 rounded border border-border bg-secondary flex items-center justify-center">
+                <Zap className="h-5 w-5 text-amber-400" />
+              </div>
+              <h3 className="font-mono-data text-base font-bold text-foreground">Sub-second Indexing</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Full-text inverted indexes tuned for rapid querying of complex hashes, leaked credentials, and IOC indicators.
+              </p>
             </div>
 
-            <div>
-              <h3 className="font-semibold mb-3">Support</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="#" className="hover:text-foreground transition-colors">
-                    Help Center
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-foreground transition-colors">
-                    Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-foreground transition-colors">
-                    Status
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-3">Legal</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="#" className="hover:text-foreground transition-colors">
-                    Privacy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-foreground transition-colors">
-                    Terms
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-foreground transition-colors">
-                    Security
-                  </Link>
-                </li>
-              </ul>
+            <div className="cyber-panel p-6 rounded-lg border border-border/80 space-y-3">
+              <div className="h-10 w-10 rounded border border-border bg-secondary flex items-center justify-center">
+                <Shield className="h-5 w-5 text-emerald-400" />
+              </div>
+              <h3 className="font-mono-data text-base font-bold text-foreground">No-Log Guarantee</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Queries are processed entirely in ephemeral memory enclaves. Your investigation patterns and search queries are never retained.
+              </p>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="border-t border-border/40 mt-8 pt-8 text-center text-sm text-muted-foreground">
-            © 2024 findxo. All rights reserved.
+      {/* Pricing / Clearance Tiers */}
+      <section id="pricing" className="py-20 px-4">
+        <div className="container max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <span className="text-xs uppercase font-mono-data text-primary tracking-widest">ACCESS CLEARANCE</span>
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight font-mono-data mt-2">
+              Predictable Settlement via Solana
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto mt-2">
+              Zero recurring credit card commitments. Settle using SOL tokens with instantaneous confirmation.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+            {/* Free */}
+            <div className="cyber-panel p-6 rounded-lg border border-border/80 flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-mono-data uppercase tracking-wider text-muted-foreground">TIER 0</span>
+                <h3 className="text-xl font-bold font-mono-data mt-1">Community</h3>
+                <div className="text-3xl font-extrabold font-mono-data my-4">€0</div>
+                <p className="text-xs text-muted-foreground mb-6">
+                  For individual researchers and test integrations.
+                </p>
+                <div className="space-y-2.5 text-xs font-mono-data">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>10 API queries / 24h</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>Basic dark web search</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>Standard rate limits</span>
+                  </div>
+                </div>
+              </div>
+
+              <Button variant="outline" className="w-full mt-8 font-mono-data text-xs border-border bg-secondary/50" asChild>
+                <Link href="/dashboard">Access Free</Link>
+              </Button>
+            </div>
+
+            {/* Investigator */}
+            <div className="cyber-panel-glow p-6 rounded-lg border border-primary/40 flex flex-col justify-between relative">
+              <div className="absolute -top-3 right-4">
+                <Badge className="bg-primary text-primary-foreground font-mono-data text-[10px] uppercase">
+                  RECOMMENDED
+                </Badge>
+              </div>
+
+              <div>
+                <span className="text-xs font-mono-data uppercase tracking-wider text-primary">TIER 1</span>
+                <h3 className="text-xl font-bold font-mono-data mt-1">Investigator</h3>
+                <div className="text-3xl font-extrabold font-mono-data my-4">
+                  €{PLAN_PRICES.investigator.monthly} <span className="text-xs font-normal text-muted-foreground">/ month</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-6">
+                  For active threat analysts and incident responders.
+                </p>
+                <div className="space-y-2.5 text-xs font-mono-data">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>300 API queries / 24h</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>Threat actor & IOC filtering</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>Batch leak export (JSON/CSV)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>Priority query queues</span>
+                  </div>
+                </div>
+              </div>
+
+              <Button className="w-full mt-8 font-mono-data text-xs bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+                <Link href="/subscription">Acquire Clearance</Link>
+              </Button>
+            </div>
+
+            {/* Pro */}
+            <div className="cyber-panel p-6 rounded-lg border border-border/80 flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-mono-data uppercase tracking-wider text-muted-foreground">TIER 2</span>
+                <h3 className="text-xl font-bold font-mono-data mt-1">Enterprise Pro</h3>
+                <div className="text-3xl font-extrabold font-mono-data my-4">
+                  €{PLAN_PRICES.pro.monthly} <span className="text-xs font-normal text-muted-foreground">/ month</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-6">
+                  For cybersecurity firms and institutional security operations centers.
+                </p>
+                <div className="space-y-2.5 text-xs font-mono-data">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>1,500 API queries / 24h</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>Real-time webhook alert triggers</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>Dedicated throughput quota</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>Direct engineering support</span>
+                  </div>
+                </div>
+              </div>
+
+              <Button variant="outline" className="w-full mt-8 font-mono-data text-xs border-border bg-secondary/50" asChild>
+                <Link href="/subscription">Acquire Clearance</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Industrial Footer */}
+      <footer className="mt-auto border-t border-border/80 bg-background/80 py-8 px-4 font-mono-data text-xs text-muted-foreground">
+        <div className="container max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-foreground">findxo</span>
+            <span>—</span>
+            <span>Decentralized OSINT & Underground Intelligence</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <Link href="/dashboard" className="hover:text-foreground">Console</Link>
+            <Link href="/api-keys" className="hover:text-foreground">API Tokens</Link>
+            <Link href="/subscription" className="hover:text-foreground">Solana Pay</Link>
           </div>
         </div>
       </footer>
