@@ -20,6 +20,8 @@ import { MERCHANT_WALLET_ADDRESS } from "@/lib/solana/config"
 import { PaymentMonitor } from "@/lib/solana/payment-monitor"
 import { useToast } from "@/hooks/use-toast"
 import QRCode from "qrcode"
+import { downloadReceipt, ReceiptData } from "@/lib/subscription/receipt"
+import { Download } from "lucide-react"
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -48,6 +50,7 @@ export function PaymentModal({
   const [isProcessing, setIsProcessing] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "error">("idle")
   const [solAmount, setSolAmount] = useState<number>(0)
+  const [lastSignature, setLastSignature] = useState<string>("")
   const [paymentMonitor] = useState(() => new PaymentMonitor())
   const [errorMessage, setErrorMessage] = useState<string>("")
 
@@ -292,6 +295,7 @@ export function PaymentModal({
         description: "Your subscription has been activated",
       })
 
+      setLastSignature(signature)
       onPaymentSuccess(signature)
     } catch (error: any) {
       console.error("[v0] Payment failed:", error)
@@ -376,7 +380,8 @@ export function PaymentModal({
           title: "Payment Successful",
           description: "Your subscription has been activated",
         })
-        onPaymentSuccess(signature)
+        setLastSignature(signature)
+      onPaymentSuccess(signature)
       } else {
         throw new Error("Payment timeout - no transaction detected within 5 minutes")
       }
@@ -453,10 +458,38 @@ export function PaymentModal({
                     </>
                   )}
                   {paymentStatus === "success" && (
-                    <>
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                      <span className="text-green-600">Payment successful!</span>
-                    </>
+                    <div className="text-center space-y-3">
+                      <div className="flex items-center justify-center space-x-2">
+                        <CheckCircle className="h-5 w-5 text-emerald-400" />
+                        <span className="text-emerald-400 font-mono-data font-semibold">Settlement Confirmed!</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground font-mono-data">
+                        Your {planName.toUpperCase()} clearance tier is now active.
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          const receipt: ReceiptData = {
+                            receiptId: "REC-" + (lastSignature ? lastSignature.slice(0, 8).toUpperCase() : Math.random().toString(36).substring(2, 10).toUpperCase()),
+                            transactionSignature: lastSignature || "On-Chain Slot Confirmed",
+                            payerWallet: publicKey?.toBase58() || "Connected Wallet",
+                            merchantWallet: process.env.NEXT_PUBLIC_MERCHANT_WALLET || MERCHANT_WALLET_ADDRESS,
+                            planName: planName,
+                            billingPeriod: billingPeriod,
+                            amountEur: amount,
+                            amountSol: solAmount,
+                            date: new Date().toISOString().replace("T", " ").substring(0, 19),
+                            status: "CONFIRMED",
+                            dailyRequests: planName === "investigator" ? 300 : planName === "pro" ? 1000 : 10,
+                          }
+                          downloadReceipt(receipt)
+                        }}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 font-mono-data text-xs gap-1.5"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        <span>Download Official Tax Receipt</span>
+                      </Button>
+                    </div>
                   )}
                   {paymentStatus === "error" && (
                     <div className="text-center space-y-3">

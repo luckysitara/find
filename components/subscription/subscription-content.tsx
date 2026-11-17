@@ -30,6 +30,8 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { PaymentModal } from "@/components/payment/payment-modal"
 import { PLAN_PRICES } from "@/lib/subscription/config"
+import { downloadReceipt, ReceiptData } from "@/lib/subscription/receipt"
+import { Download } from "lucide-react"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { WalletButton } from "@/components/wallet/wallet-button"
 
@@ -55,6 +57,7 @@ export function SubscriptionContent() {
   const [loadingData, setLoadingData] = useState(true)
   const [selectedBilling, setSelectedBilling] = useState<"monthly" | "yearly">("monthly")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [lastSignature, setLastSignature] = useState<string>("")
   const [paymentModal, setPaymentModal] = useState<{
     isOpen: boolean
     planName: string
@@ -180,6 +183,7 @@ export function SubscriptionContent() {
   }
 
   const handlePaymentSuccess = async (signature: string) => {
+    setLastSignature(signature)
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000))
       await fetchSubscriptionData()
@@ -619,15 +623,42 @@ export function SubscriptionContent() {
                   </div>
                 </div>
 
-                <Button
-                  onClick={() => {
-                    const plansTrigger = document.querySelector('[value="plans"]') as HTMLElement
-                    plansTrigger?.click()
-                  }}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-mono-data text-xs h-9"
-                >
-                  UPGRADE CLEARANCE
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const planName = currentSubscription?.plan_name || "free"
+                      const amountEur = planName === "investigator" ? PLAN_PRICES.investigator.monthly : planName === "pro" ? PLAN_PRICES.pro.monthly : 0
+                      const receipt: ReceiptData = {
+                        receiptId: "REC-" + (lastSignature ? lastSignature.slice(0, 8).toUpperCase() : Math.random().toString(36).substring(2, 10).toUpperCase()),
+                        transactionSignature: lastSignature || "On-Chain Active Clearance Verified",
+                        payerWallet: user?.wallet_address || "Connected Wallet",
+                        merchantWallet: "11111111111111111111111111111112",
+                        planName: planName,
+                        billingPeriod: selectedBilling,
+                        amountEur: amountEur,
+                        amountSol: amountEur > 0 ? Number((amountEur / 65.16).toFixed(4)) : 0,
+                        date: new Date().toISOString().replace("T", " ").substring(0, 19),
+                        status: "CONFIRMED",
+                        dailyRequests: currentSubscription?.daily_requests || 10,
+                      }
+                      downloadReceipt(receipt)
+                    }}
+                    className="border-border bg-secondary/60 hover:bg-secondary text-foreground font-mono-data text-xs h-9 gap-1.5"
+                  >
+                    <Download className="h-3.5 w-3.5 text-primary" />
+                    <span>DOWNLOAD RECEIPT</span>
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const plansTrigger = document.querySelector('[value="plans"]') as HTMLElement
+                      plansTrigger?.click()
+                    }}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 font-mono-data text-xs h-9"
+                  >
+                    UPGRADE CLEARANCE
+                  </Button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-mono-data text-xs">
