@@ -21,7 +21,9 @@ import {
   Search,
   Sparkles,
   Zap,
-  Radio
+  Radio,
+  Menu,
+  X
 } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
@@ -43,6 +45,7 @@ export function DashboardContent() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [copiedCurl, setCopiedCurl] = useState(false)
   const [accountCreatedDate, setAccountCreatedDate] = useState<string | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     if (user?.created_at) {
@@ -208,7 +211,7 @@ export function DashboardContent() {
             </nav>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button
               variant="outline"
               size="sm"
@@ -221,8 +224,51 @@ export function DashboardContent() {
             </Button>
             <ThemeToggle />
             <WalletButton />
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 md:hidden border-border bg-secondary/50"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </Button>
           </div>
         </div>
+
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-border/80 bg-background/95 backdrop-blur px-4 py-3 space-y-1 font-mono-data text-xs animate-in slide-in-from-top-2 duration-200">
+            <Link
+              href="/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded bg-secondary text-foreground border border-border/60"
+            >
+              OVERVIEW
+            </Link>
+            <Link
+              href="/api-keys"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            >
+              API KEYS
+            </Link>
+            <Link
+              href="/analytics"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            >
+              TELEMETRY
+            </Link>
+            <Link
+              href="/subscription"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            >
+              BILLING & CLEARANCE
+            </Link>
+          </div>
+        )}
       </header>
 
       {/* Main Console Body */}
