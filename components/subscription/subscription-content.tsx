@@ -395,7 +395,7 @@ export function SubscriptionContent() {
           </div>
         </div>
 
-        <Tabs defaultValue="plans" className="space-y-6">
+        <Tabs defaultValue="current" className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
             <TabsList className="bg-secondary/60 border border-border/60 font-mono-data text-xs h-9 p-1">
               <TabsTrigger value="plans" className="text-xs px-4">
@@ -514,15 +514,50 @@ export function SubscriptionContent() {
                       </div>
                     </div>
 
-                    <div className="p-6 pt-0 mt-6 border-t border-border/40">
+                    <div className="p-6 pt-0 mt-6 border-t border-border/40 space-y-2">
                       {isCurrentPlan ? (
-                        <Button
-                          variant="outline"
-                          disabled
-                          className="w-full h-10 border-emerald-500/40 bg-emerald-500/10 text-emerald-400 font-mono-data text-xs cursor-default"
-                        >
-                          ACTIVE CLEARANCE
-                        </Button>
+                        <>
+                          <Button
+                            variant="outline"
+                            disabled
+                            className="w-full h-10 border-emerald-500/40 bg-emerald-500/10 text-emerald-400 font-mono-data text-xs cursor-default"
+                          >
+                            ACTIVE CLEARANCE
+                          </Button>
+                          {plan.name !== "free" && (
+                            <Button
+                              variant="outline"
+                              onClick={async () => {
+                                const amountEur = plan.name === "investigator" ? PLAN_PRICES.investigator.monthly : plan.name === "pro" ? PLAN_PRICES.pro.monthly : 0
+                                let amountSol = 0
+                                if (amountEur > 0) {
+                                  try {
+                                    amountSol = await convertEurToSol(amountEur)
+                                  } catch {
+                                    amountSol = Number((amountEur / 180).toFixed(4))
+                                  }
+                                }
+                                const receipt: ReceiptData = {
+                                  receiptId: "REC-" + (lastSignature ? lastSignature.slice(0, 8).toUpperCase() : Math.random().toString(36).substring(2, 10).toUpperCase()),
+                                  transactionSignature: lastSignature || "On-Chain Active Clearance Verified",
+                                  payerWallet: user?.wallet_address || "Connected Wallet",
+                                  planName: plan.name,
+                                  billingPeriod: selectedBilling,
+                                  amountEur: amountEur,
+                                  amountSol: amountSol,
+                                  date: new Date().toISOString().replace("T", " ").substring(0, 19),
+                                  status: "CONFIRMED",
+                                  dailyRequests: plan.daily_requests,
+                                }
+                                downloadReceipt(receipt)
+                              }}
+                              className="w-full h-9 border-border bg-secondary/60 hover:bg-secondary text-foreground font-mono-data text-xs gap-1.5"
+                            >
+                              <Download className="h-3.5 w-3.5 text-primary" />
+                              <span>DOWNLOAD RECEIPT</span>
+                            </Button>
+                          )}
+                        </>
                       ) : plan.name === "free" ? (
                         <Button
                           variant="outline"
