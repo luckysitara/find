@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,140 +13,126 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Wallet address required" }, { status: 400 })
     }
 
-    const supabase = await createAdminClient()
+    const supabase = createAdminClient()
 
-    // Get user by wallet address with timeout
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    // 1. Get user by wallet address
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("wallet_address", walletAddress)
+      .maybeSingle()
 
-    try {
-      const { data: user, error: userError } = await supabase
-        .from("users")
-        .select("id")
-        .eq("wallet_address", walletAddress)
-        .maybeSingle()
-
-      clearTimeout(timeoutId)
-
-      if (userError) {
-        console.error("[v0] User query error:", userError)
-        // Return default subscription for new users
-        return NextResponse.json({
-          subscription: {
-            planName: "free",
-            dailyRequests: 10,
-            status: "active",
-            expiresAt: null,
-          },
-          usage: {
-            dailyUsage: 0,
-            dailyLimit: 10,
-          },
-        })
-      }
-
-      if (!user) {
-        // Return default subscription for new users
-        return NextResponse.json({
-          subscription: {
-            planName: "free",
-            dailyRequests: 10,
-            status: "active",
-            expiresAt: null,
-          },
-          usage: {
-            dailyUsage: 0,
-            dailyLimit: 10,
-          },
-        })
-      }
-
-      // Get current subscription - directly query instead of RPC for reliability
-      let subscription = null
-      try {
-        const { data: subData, error: subError } = await supabase
-          .from("user_subscriptions")
-          .select(
-            `
-            id,
-            status,
-            expires_at,
-            subscription_plans (
-              name,
-              daily_requests
-            )
-          `
-          )
-          .eq("user_id", user.id)
-          .eq("status", "active")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle()
-
-        console.log("[v0] Subscription status subData:", subData, "subError:", subError)
-
-        if (!subError && subData) {
-          const isNotExpired = !subData.expires_at || new Date(subData.expires_at) > new Date()
-          if (isNotExpired) {
-            const planObj = Array.isArray(subData.subscription_plans)
-              ? subData.subscription_plans[0]
-              : subData.subscription_plans
-
-            subscription = {
-              plan_name: planObj?.name || "free",
-              daily_requests: planObj?.daily_requests || 10,
-              status: subData.status,
-              expires_at: subData.expires_at,
-            }
-          }
-        }
-      } catch (subError) {
-        console.log("[v0] Subscription query failed:", subError)
-      }
-
-      // Get daily usage
-      let usage = 0
-      try {
-        const { data: usageData, error: usageError } = await supabase.rpc("get_daily_usage", {
-          user_uuid: user.id,
-        })
-
-        if (!usageError && usageData !== null && typeof usageData === "number") {
-          usage = usageData
-        }
-      } catch (usageError) {
-        console.log("[v0] Usage RPC failed:", usageError)
-      }
-
+    if (userError || !user) {
+      if (userError) console.error("[v0] User query error:", userError)
       return NextResponse.json({
         subscription: {
-          planName: subscription?.plan_name || "free",
-          dailyRequests: subscription?.daily_requests || 10,
-          status: subscription?.status || "active",
-          expiresAt: subscription?.expires_at || null,
+          planName: "free",
+          dailyRequests: 10,
+          status: "active",
+          expiresAt: null,
+        },
+        usage: {
+          dailyUsage: 0,
+          dailyLimit: 10,
+        },
+      })
+    }
+
+    // 2. Query user_subscriptions with inner join on subscription_plans
+    const { data: subData, error: subError } = await supabase
+      .from("user_subscriptions")
+      .select(
+        `
+        id,
+        status,
+        expires_at,
+        subscription_plans (
+          name,
+          daily_requests
+        )
+      `
+      )
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    let subscription = {
+      plan_name: "free",
+      daily_requests: 10,
+      status: "active",
+      expires_at: null as string | null,
+    }
+
+    if (!subError && subData) {
+      const isNotExpired = !subData.expires_at || new Date(subData.expires_at) > new Date()
+      if (isNotExpired) {
+        const planObj = Array.isArray(subData.subscription_plans)
+          ? subData.subscription_plans[0]
+          : subData.subscription_plans
+
+        subscription = {
+          plan_name: planObj?.name || "free",
+          daily_requests: planObj?.daily_requests || 10,
+          status: subData.status,
+          expires_at: subData.expires_at,
+        }
+      }
+    }
+
+    // 3. Get daily usage count
+    let usage = 0
+    try {
+      const { data: usageData, error: usageError } = await supabase.rpc("get_daily_usage", {
+        user_uuid: user.id,
+      })
+      if (!usageError && typeof usageData === "number") {
+        usage = usageData
+      }
+    } catch {
+      // Fallback usage
+    }
+
+    return NextResponse.json(
+      {
+        subscription: {
+          planName: subscription.plan_name,
+          dailyRequests: subscription.daily_requests,
+          status: subscription.status,
+          expiresAt: subscription.expires_at,
         },
         usage: {
           dailyUsage: usage,
-          dailyLimit: subscription?.daily_requests || 10,
+          dailyLimit: subscription.daily_requests,
         },
-      })
-    } finally {
-      clearTimeout(timeoutId)
-    }
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+        },
+      }
+    )
   } catch (error) {
     console.error("[v0] Subscription status error:", error)
-    // Return default subscription on error instead of failing
-    return NextResponse.json({
-      subscription: {
-        planName: "free",
-        dailyRequests: 10,
-        status: "active",
-        expiresAt: null,
+    return NextResponse.json(
+      {
+        subscription: {
+          planName: "free",
+          dailyRequests: 10,
+          status: "active",
+          expiresAt: null,
+        },
+        usage: {
+          dailyUsage: 0,
+          dailyLimit: 10,
+        },
       },
-      usage: {
-        dailyUsage: 0,
-        dailyLimit: 10,
-      },
-    })
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+        },
+      }
+    )
   }
 }
