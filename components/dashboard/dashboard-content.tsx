@@ -197,12 +197,6 @@ export function DashboardContent() {
                 API KEYS
               </Link>
               <Link 
-                href="/analytics" 
-                className="px-3 py-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-              >
-                TELEMETRY
-              </Link>
-              <Link 
                 href="/subscription" 
                 className="px-3 py-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
               >
@@ -252,13 +246,6 @@ export function DashboardContent() {
               className="block px-3 py-2 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             >
               API KEYS
-            </Link>
-            <Link
-              href="/analytics"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-            >
-              TELEMETRY
             </Link>
             <Link
               href="/subscription"
@@ -486,20 +473,6 @@ export function DashboardContent() {
                     <div>
                       <div className="text-xs font-semibold font-mono-data text-foreground">API Keys Hub</div>
                       <div className="text-[11px] text-muted-foreground">Issue, rotate or revoke access tokens</div>
-                    </div>
-                  </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
-                </Link>
-
-                <Link
-                  href="/analytics"
-                  className="flex items-center justify-between p-2.5 rounded bg-secondary/50 border border-border/60 hover:bg-secondary hover:border-border transition-colors group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Activity className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="text-xs font-semibold font-mono-data text-foreground">Telemetry & Logs</div>
-                      <div className="text-[11px] text-muted-foreground">Realtime latency, request headers & errors</div>
                     </div>
                   </div>
                   <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />

@@ -290,12 +290,6 @@ export function SubscriptionContent() {
                 API KEYS
               </Link>
               <Link 
-                href="/analytics" 
-                className="px-3 py-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-              >
-                TELEMETRY
-              </Link>
-              <Link 
                 href="/subscription" 
                 className="px-3 py-1.5 rounded bg-secondary text-foreground border border-border/80"
               >
@@ -349,13 +343,6 @@ export function SubscriptionContent() {
               className="block px-3 py-2 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             >
               API KEYS
-            </Link>
-            <Link
-              href="/analytics"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-            >
-              TELEMETRY
             </Link>
             <Link
               href="/subscription"

@@ -298,12 +298,6 @@ export function ApiKeysContent() {
                 API KEYS
               </Link>
               <Link 
-                href="/analytics" 
-                className="px-3 py-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-              >
-                TELEMETRY
-              </Link>
-              <Link 
                 href="/subscription" 
                 className="px-3 py-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
               >
@@ -352,13 +346,6 @@ export function ApiKeysContent() {
               className="block px-3 py-2 rounded bg-secondary text-foreground border border-border/60"
             >
               API KEYS
-            </Link>
-            <Link
-              href="/analytics"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-            >
-              TELEMETRY
             </Link>
             <Link
               href="/subscription"
