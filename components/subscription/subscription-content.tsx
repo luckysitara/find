@@ -30,6 +30,7 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { PaymentModal } from "@/components/payment/payment-modal"
 import { PLAN_PRICES } from "@/lib/subscription/config"
+import { convertEurToSol } from "@/lib/solana/payment"
 import { downloadReceipt, ReceiptData } from "@/lib/subscription/receipt"
 import { Download } from "lucide-react"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
@@ -626,9 +627,17 @@ export function SubscriptionContent() {
                 <div className="flex flex-wrap items-center gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => {
+                    onClick={async () => {
                       const planName = currentSubscription?.plan_name || "free"
                       const amountEur = planName === "investigator" ? PLAN_PRICES.investigator.monthly : planName === "pro" ? PLAN_PRICES.pro.monthly : 0
+                      let amountSol = 0
+                      if (amountEur > 0) {
+                        try {
+                          amountSol = await convertEurToSol(amountEur)
+                        } catch {
+                          amountSol = Number((amountEur / 180).toFixed(4))
+                        }
+                      }
                       const receipt: ReceiptData = {
                         receiptId: "REC-" + (lastSignature ? lastSignature.slice(0, 8).toUpperCase() : Math.random().toString(36).substring(2, 10).toUpperCase()),
                         transactionSignature: lastSignature || "On-Chain Active Clearance Verified",
@@ -636,7 +645,7 @@ export function SubscriptionContent() {
                         planName: planName,
                         billingPeriod: selectedBilling,
                         amountEur: amountEur,
-                        amountSol: amountEur > 0 ? Number((amountEur / 65.16).toFixed(4)) : 0,
+                        amountSol: amountSol,
                         date: new Date().toISOString().replace("T", " ").substring(0, 19),
                         status: "CONFIRMED",
                         dailyRequests: currentSubscription?.daily_requests || 10,
