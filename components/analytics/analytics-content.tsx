@@ -384,7 +384,7 @@ export function AnalyticsContent() {
               <div className="p-3 rounded bg-secondary/40 border border-border/60 flex items-center justify-between">
                 <div>
                   <div className="font-semibold text-foreground">SOLANA SETTLEMENT</div>
-                  <div className="text-[10px] text-muted-foreground">Devnet / Mainnet RPC</div>
+                  <div className="text-[10px] text-muted-foreground">Mainnet RPC</div>
                 </div>
                 <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   ONLINE

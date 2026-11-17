@@ -473,7 +473,6 @@ export function PaymentModal({
                             receiptId: "REC-" + (lastSignature ? lastSignature.slice(0, 8).toUpperCase() : Math.random().toString(36).substring(2, 10).toUpperCase()),
                             transactionSignature: lastSignature || "On-Chain Slot Confirmed",
                             payerWallet: publicKey?.toBase58() || "Connected Wallet",
-                            merchantWallet: process.env.NEXT_PUBLIC_MERCHANT_WALLET || MERCHANT_WALLET_ADDRESS,
                             planName: planName,
                             billingPeriod: billingPeriod,
                             amountEur: amount,

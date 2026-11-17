@@ -633,7 +633,6 @@ export function SubscriptionContent() {
                         receiptId: "REC-" + (lastSignature ? lastSignature.slice(0, 8).toUpperCase() : Math.random().toString(36).substring(2, 10).toUpperCase()),
                         transactionSignature: lastSignature || "On-Chain Active Clearance Verified",
                         payerWallet: user?.wallet_address || "Connected Wallet",
-                        merchantWallet: "11111111111111111111111111111112",
                         planName: planName,
                         billingPeriod: selectedBilling,
                         amountEur: amountEur,
@@ -699,7 +698,7 @@ export function SubscriptionContent() {
                     <CreditCard className="h-4 w-4 text-primary" />
                     <span className="uppercase">PAYMENT CHANNEL</span>
                   </div>
-                  <div className="text-base font-bold text-foreground">SOLANA MAINNET / DEVNET</div>
+                  <div className="text-base font-bold text-foreground">SOLANA MAINNET</div>
                   <p className="text-[11px] text-muted-foreground mt-1">
                     Direct cryptographic peer settlement
                   </p>

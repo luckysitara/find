@@ -2,7 +2,7 @@ export interface ReceiptData {
   receiptId: string
   transactionSignature: string
   payerWallet: string
-  merchantWallet: string
+  merchantWallet?: string
   planName: string
   billingPeriod: "monthly" | "yearly"
   amountEur: number
@@ -141,15 +141,10 @@ export function generateReceiptPdfOrHtml(data: ReceiptData) {
   </div>
 
   <div class="grid">
-    <div class="card">
+    <div class="card" style="grid-column: span 2;">
       <h4>Payer Information</h4>
-      <div style="font-weight: 600; margin-bottom: 4px;">Solana Wallet Address:</div>
+      <div style="font-weight: 600; margin-bottom: 4px;">Subscriber Solana Wallet Address:</div>
       <div class="hash">${data.payerWallet}</div>
-    </div>
-    <div class="card">
-      <h4>Settlement Enclave</h4>
-      <div style="font-weight: 600; margin-bottom: 4px;">Merchant Protocol Wallet:</div>
-      <div class="hash">${data.merchantWallet}</div>
     </div>
   </div>
 
