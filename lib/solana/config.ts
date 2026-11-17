@@ -1,11 +1,11 @@
 import { clusterApiUrl, Connection } from "@solana/web3.js"
 
 // Network configuration
-export const SOLANA_NETWORK = (process.env.NEXT_PUBLIC_SOLANA_NETWORK || (process.env.NODE_ENV === "production" ? "mainnet-beta" : "devnet")) as "mainnet-beta" | "devnet" | "testnet"
-export const RPC_ENDPOINT = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || clusterApiUrl(SOLANA_NETWORK)
+export const SOLANA_NETWORK = (process.env.NEXT_PUBLIC_SOLANA_NETWORK || process.env.SOLANA_NETWORK || (process.env.NODE_ENV === "production" ? "mainnet-beta" : "devnet")) as "mainnet-beta" | "devnet" | "testnet"
+export const RPC_ENDPOINT = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || process.env.SOLANA_RPC_URL || clusterApiUrl(SOLANA_NETWORK)
 
 // Merchant wallet configuration
-export const MERCHANT_WALLET_ADDRESS = process.env.NEXT_PUBLIC_MERCHANT_WALLET || "11111111111111111111111111111111"
+export const MERCHANT_WALLET_ADDRESS = process.env.NEXT_PUBLIC_MERCHANT_WALLET || process.env.MERCHANT_WALLET || ""
 
 // Create connection instance
 export const createConnection = () => new Connection(RPC_ENDPOINT, "confirmed")

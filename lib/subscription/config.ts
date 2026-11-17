@@ -1,11 +1,11 @@
 export const PLAN_PRICES = {
   investigator: {
-    monthly: Number(process.env.NEXT_PUBLIC_PRICE_INVESTIGATOR_MONTHLY) || 300,
-    yearly: Number(process.env.NEXT_PUBLIC_PRICE_INVESTIGATOR_YEARLY) || 2500,
+    monthly: Number(process.env.NEXT_PUBLIC_PRICE_INVESTIGATOR_MONTHLY || process.env.INVESTIGATOR_MONTHLY) || 0,
+    yearly: Number(process.env.NEXT_PUBLIC_PRICE_INVESTIGATOR_YEARLY || process.env.INVESTIGATOR_YEARLY) || 0,
   },
   pro: {
-    monthly: Number(process.env.NEXT_PUBLIC_PRICE_PRO_MONTHLY) || 1000,
-    yearly: Number(process.env.NEXT_PUBLIC_PRICE_PRO_YEARLY) || 12000,
+    monthly: Number(process.env.NEXT_PUBLIC_PRICE_PRO_MONTHLY || process.env.PRICE_PRO_MONTHLY) || 0,
+    yearly: Number(process.env.NEXT_PUBLIC_PRICE_PRO_YEARLY || process.env.PRICE_PRO_YEARLY) || 0,
   },
   free: {
     monthly: 0,
